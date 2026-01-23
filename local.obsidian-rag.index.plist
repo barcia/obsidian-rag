@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>local.obsidian-rag.index</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/node</string>
+        <!-- Cambiar $HOME por tu home directory -->
+        <string>$HOME/.local/bin/obsidian-rag/indexer.js</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>LOG_FILE</key>
+        <string>1</string>
+    </dict>
+
+    <!-- Ejecutar cada 4 horas (14400 segundos) -->
+    <key>StartInterval</key>
+    <integer>14400</integer>
+</dict>
+</plist>
