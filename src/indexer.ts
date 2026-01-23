@@ -18,6 +18,7 @@ async function indexVault(): Promise<IndexStats> {
   const mdFiles = await glob('**/*.md', {
     cwd: config.obsidianVaultPath,
     ignore: ['**/node_modules/**', '**/.obsidian/**', '**/.trash/**'],
+    follow: true,
   });
 
   log(`Found ${mdFiles.length} markdown files`);
