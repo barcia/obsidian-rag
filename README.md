@@ -1,10 +1,10 @@
 # Obsidian RAG MCP Server
 
-Sistema RAG local para búsqueda semántica en tu vault de Obsidian usando LanceDB y OpenRouter.
+Local RAG system for semantic search in your Obsidian vault using LanceDB and OpenRouter.
 
-## Instalación
+## Installation
 
-1. Clona el repositorio en `~/.local/mcp`:
+1. Clone the repository to `~/.local/mcp`:
 
 ```bash
 mkdir -p ~/.local/mcp
@@ -13,30 +13,30 @@ git clone <repo-url> obsidian-rag
 cd obsidian-rag
 ```
 
-2. Configura el `.env`:
+2. Configure the `.env` file:
 
 ```bash
 cp .env.example .env
 ```
 
-Edita `.env` con tu configuración:
+Edit `.env` with your configuration:
 
 ```
-OPENROUTER_API_KEY=sk-or-tu-api-key
+OPENROUTER_API_KEY=sk-or-your-api-key
 OBSIDIAN_VAULT_PATH=~/Documents/Obsidian
 DATA_PATH=~/.local/share/obsidian-rag
 ```
 
-> **Nota**: Los datos se guardan en `~/.local/share/obsidian-rag/` por defecto.
+> **Note**: Data is stored in `~/.local/share/obsidian-rag/` by default.
 
-3. Instala dependencias y compila:
+3. Install dependencies and build:
 
 ```bash
 pnpm install
 pnpm run build
 ```
 
-4. Crea symlinks para los ejecutables:
+4. Create symlinks for the executables:
 
 ```bash
 mkdir -p ~/.local/bin/obsidian-rag
@@ -44,106 +44,106 @@ ln -sf ~/.local/mcp/obsidian-rag/dist/server.js ~/.local/bin/obsidian-rag/server
 ln -sf ~/.local/mcp/obsidian-rag/dist/indexer.js ~/.local/bin/obsidian-rag/indexer.js
 ```
 
-## Uso
+## Usage
 
-### Indexar el vault
+### Index the vault
 
-**Modo interactivo** (terminal con output visual):
+**Interactive mode** (terminal with visual output):
 
 ```bash
 pnpm run index
 ```
 
-**Modo automático** (para cron/launchctl, escribe a log):
+**Automatic mode** (for cron/launchctl, writes to log):
 
 ```bash
 pnpm run index:cron
 ```
 
-Los logs se guardan en `~/.local/share/obsidian-rag/index.log`
+Logs are saved to `~/.local/share/obsidian-rag/index.log`
 
-### Configurar en cliente MCP
+### Configure in MCP client
 
-Agrega a tu configuración MCP (ej. `~/.claude.json`):
+Add to your MCP configuration (e.g., `~/.claude.json`):
 
 ```json
 {
   "mcpServers": {
     "obsidian-rag": {
       "command": "node",
-      "args": ["~/.local/bin/obsidian-rag/server.js"]
+      "args": ["/Users/{USER}/.local/bin/obsidian-rag/server.js"]
     }
   }
 }
 ```
 
-### Indexación automática con launchctl (macOS)
+### Automatic indexing with launchctl (macOS)
 
-El archivo `local.obsidian-rag.index.plist` ejecuta el indexador **cada 4 horas**.
+The `local.obsidian-rag.index.plist` file runs the indexer **every 4 hours**.
 
-1. Copia el plist a LaunchAgents:
+1. Copy the plist to LaunchAgents:
 
 ```bash
 cp local.obsidian-rag.index.plist ~/Library/LaunchAgents/
 ```
 
-2. Carga el servicio:
+2. Load the service:
 
 ```bash
 launchctl load ~/Library/LaunchAgents/local.obsidian-rag.index.plist
 ```
 
-3. Comandos útiles:
+3. Useful commands:
 
 ```bash
-# Ejecutar manualmente
+# Run manually
 launchctl start local.obsidian-rag.index
 
-# Ver logs
+# View logs
 cat ~/.local/share/obsidian-rag/index.log
 
-# Desinstalar
+# Uninstall
 launchctl unload ~/Library/LaunchAgents/local.obsidian-rag.index.plist
 ```
 
-## Tools MCP disponibles
+## Available MCP Tools
 
 ### `obsidian_search`
 
-Búsqueda semántica en el vault.
+Semantic search in the vault.
 
-| Parámetro | Tipo | Descripción |
+| Parameter | Type | Description |
 |-----------|------|-------------|
-| `query` | string | Consulta en lenguaje natural |
-| `limit` | number | Número de resultados (default: 5) |
-| `file_filter` | string | Filtrar por nombre de archivo (opcional) |
+| `query` | string | Natural language query |
+| `limit` | number | Number of results (default: 5) |
+| `file_filter` | string | Filter by filename (optional) |
 
 ### `obsidian_list_files`
 
-Listar archivos indexados.
+List indexed files.
 
-| Parámetro | Tipo | Descripción |
+| Parameter | Type | Description |
 |-----------|------|-------------|
-| `pattern` | string | Filtro por nombre (opcional) |
-| `limit` | number | Máximo de resultados (default: 50) |
+| `pattern` | string | Filter by name (optional) |
+| `limit` | number | Maximum results (default: 50) |
 
 ### `obsidian_get_file`
 
-Obtener contenido completo de un archivo.
+Get the full content of a file.
 
-| Parámetro | Tipo | Descripción |
+| Parameter | Type | Description |
 |-----------|------|-------------|
-| `file_path` | string | Ruta relativa al vault |
+| `file_path` | string | Relative path to the vault |
 
-## Estructura
+## Directory Structure
 
 ```
 ~/.local/
-├── mcp/obsidian-rag/     # Código fuente
-├── bin/obsidian-rag/          # Symlinks a ejecutables
+├── mcp/obsidian-rag/            # Source code
+├── bin/obsidian-rag/            # Symlinks to executables
 │   ├── server.js
 │   └── indexer.js
-└── share/obsidian-rag/        # Datos
-    ├── obsidian_chunks.lance/ # Base de datos vectorial
-    └── index.log              # Logs de indexación
+└── share/obsidian-rag/          # Data
+    ├── obsidian_chunks.lance/   # Vector database
+    └── index.log                # Indexing logs
 ```
