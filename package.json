@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc",
     "index": "tsx src/indexer.ts",
-    "index:cron": "LOG_FILE=1 node dist/indexer.js",
     "start": "node dist/server.js",
     "dev": "tsx src/server.ts"
   },

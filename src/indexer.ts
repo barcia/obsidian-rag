@@ -6,7 +6,7 @@ import { config, validateConfig } from './config.js';
 import { parseMarkdownFile } from './services/markdown.js';
 import { generateEmbeddings } from './services/embeddings.js';
 import { initDB, upsertChunks, deleteByFile, getIndexedFilePaths } from './services/lancedb.js';
-import { log, logError, isFileLogging } from './services/logger.js';
+import { log, logError } from './services/logger.js';
 import type { DocumentChunk, IndexStats } from './types.js';
 
 async function indexVault(): Promise<IndexStats> {
@@ -102,7 +102,7 @@ async function main() {
   try {
     validateConfig();
 
-    if (isFileLogging()) {
+    if (config.logPath) {
       log('--- Index job started ---');
     }
 
@@ -110,7 +110,7 @@ async function main() {
 
     log(`Summary: added=${stats.added} updated=${stats.updated} deleted=${stats.deleted} unchanged=${stats.unchanged} chunks=${stats.total_chunks}`);
 
-    if (isFileLogging()) {
+    if (config.logPath) {
       log('--- Index job completed ---');
     } else {
       console.log('\n✅ Indexing complete!');

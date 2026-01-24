@@ -26,6 +26,7 @@ export const config = {
   openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
   obsidianVaultPath: expandPath(process.env.OBSIDIAN_VAULT_PATH || '~/Documents/Obsidian'),
   lancedbPath: expandPath(process.env.DATA_PATH || '~/.local/share/obsidian-rag'),
+  logPath: process.env.LOG_PATH ? expandPath(process.env.LOG_PATH) : undefined,
   embeddingModel: 'openai/text-embedding-3-small',
   embeddingDimension: 1536,
   chunkSize: 1000,

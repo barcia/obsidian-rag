@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>local.obsidian-rag.index</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>{YOUR_NODE_PATH}</string>
+        <string>{YOUR_INDEXER_JS_PATH}/obsidian-rag/indexer.js</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>LOG_PATH</key>
+        <string>{YOUR_HOME}/Library/Logs/obsidian-rag/indexer.log</string>
+    </dict>
+
+    <key>WatchPaths</key>
+    <array>
+        <string>{YOUR_OBSIDIAN_VAULT_PATH}</string>
+    </array>
+
+    <key>ThrottleInterval</key>
+    <integer>600</integer>
+
+    <key>StandardOutPath</key>
+    <string>{YOUR_HOME}/Library/Logs/obsidian-rag/launchd-stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>{YOUR_HOME}/Library/Logs/obsidian-rag/launchd-stderr.log</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
