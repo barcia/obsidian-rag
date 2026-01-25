@@ -5,16 +5,12 @@
     <key>Label</key>
     <string>local.obsidian-rag.index</string>
 
-    <!-- Set PATH to use a specific Node version (e.g., via fnm) -->
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>PATH</key>
-        <string>{YOUR_NODE_BIN_PATH}:/usr/local/bin:/usr/bin:/bin</string>
-    </dict>
-    <!-- Example: /Users/ivan/.local/share/fnm/node-versions/v24.8.0/installation/bin -->
-
+    <!-- Use fnm to run with specific Node version (recommended) -->
     <key>ProgramArguments</key>
     <array>
+        <string>fnm</string>
+        <string>exec</string>
+        <string>--using=24</string>
         <string>node</string>
         <string>{YOUR_PROJECT_PATH}/dist/indexer.js</string>
     </array>

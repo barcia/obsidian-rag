@@ -59,12 +59,14 @@ Add to `~/.claude.json`:
 {
   "mcpServers": {
     "obsidian-rag": {
-      "command": "node",
-      "args": ["{YOUR_PROJECT_PATH}/dist/server-mcp.js"]
+      "command": "fnm",
+      "args": ["exec", "--using=24", "node", "{YOUR_PROJECT_PATH}/dist/server-mcp.js"]
     }
   }
 }
 ```
+
+Using `fnm exec --using=24` ensures the correct Node version without relying on PATH.
 
 ## Auto-indexing (macOS)
 

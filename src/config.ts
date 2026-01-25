@@ -8,7 +8,6 @@ export const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
 interface ConfigFile {
   openrouterApiKey?: string;
   obsidianVaultPath?: string;
-  vaultName?: string;
 }
 
 function loadConfig(): ConfigFile {
@@ -38,7 +37,7 @@ const vaultPath = expandPath(fileConfig.obsidianVaultPath || '');
 export const config = {
   openrouterApiKey: fileConfig.openrouterApiKey || '',
   obsidianVaultPath: vaultPath,
-  vaultName: fileConfig.vaultName || basename(vaultPath),
+  vaultName: basename(vaultPath),
   lancedbPath: DATA_DIR,
   embeddingModel: 'openai/text-embedding-3-large',
   embeddingDimension: 3072,
