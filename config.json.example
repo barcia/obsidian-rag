@@ -1,5 +1,4 @@
 {
   "openrouterApiKey": "sk-or-your-api-key",
-  "obsidianVaultPath": "~/Documents/Obsidian",
-  "embeddingModel": "openai/text-embedding-3-small"
+  "obsidianVaultPath": "~/Documents/Obsidian"
 }
