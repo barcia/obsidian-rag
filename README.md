@@ -1,6 +1,21 @@
 # Obsidian RAG MCP Server
 
-Semantic search for your Obsidian vault via MCP. Uses LanceDB for vector storage and OpenRouter for embeddings.
+MCP server for Obsidian with semantic search (RAG) and vault analysis tools. Uses LanceDB for vector storage and OpenRouter for embeddings.
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `obsidian_search` | Semantic search in your vault |
+| `obsidian_list_files` | List indexed files |
+| `obsidian_get_file` | Get full file content |
+| `obsidian_get_uri` | Get Obsidian URI for a note |
+| `obsidian_get_daily_uri` | Get Obsidian URI for daily note |
+| `obsidian_open_note` | Open note in Obsidian app (side-effect) |
+| `obsidian_open_daily` | Open daily note in Obsidian app (side-effect) |
+| `obsidian_get_backlinks` | Find notes linking to a file |
+| `obsidian_get_tags` | List all tags with frequency |
+| `obsidian_get_metadata` | Get file frontmatter only |
 
 ## Install
 
@@ -16,7 +31,6 @@ cp dist/obsidian-rag-* ~/.local/bin/obsidian-rag
 ```bash
 mkdir -p ~/.config/obsidian-rag
 cp config.json.example ~/.config/obsidian-rag/config.json
-# Edit with your values
 ```
 
 ```json
@@ -58,14 +72,6 @@ launchctl load ~/Library/LaunchAgents/local.obsidian-rag.index.plist
 ```
 
 Re-indexes on vault changes (throttled 10 min).
-
-## Tools
-
-| Tool | Description |
-|------|-------------|
-| `obsidian_search` | Semantic search |
-| `obsidian_list_files` | List indexed files |
-| `obsidian_get_file` | Get file content |
 
 ## Development
 
