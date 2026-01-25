@@ -5,32 +5,30 @@
     <key>Label</key>
     <string>local.obsidian-rag.index</string>
 
-    <!-- Use fnm to run with specific Node version (recommended) -->
     <key>ProgramArguments</key>
     <array>
         <string>fnm</string>
         <string>exec</string>
         <string>--using=24</string>
         <string>node</string>
-        <string>{YOUR_PROJECT_PATH}/dist/indexer.js</string>
+        <string>{HOME}/.local/bin/obsidian-rag/indexer.js</string>
     </array>
-    <!-- Run `pnpm build` first to transpile TypeScript to dist/ -->
 
     <key>WorkingDirectory</key>
-    <string>{YOUR_PROJECT_PATH}</string>
+    <string>{HOME}/.local/opt/obsidian-rag</string>
 
     <key>WatchPaths</key>
     <array>
-        <string>{YOUR_OBSIDIAN_VAULT_PATH}</string>
+        <string>{OBSIDIAN_VAULT_PATH}</string>
     </array>
 
     <key>ThrottleInterval</key>
     <integer>600</integer>
 
     <key>StandardOutPath</key>
-    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.log</string>
+    <string>{HOME}/Library/Logs/obsidian-rag.log</string>
     <key>StandardErrorPath</key>
-    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.error.log</string>
+    <string>{HOME}/Library/Logs/obsidian-rag.error.log</string>
 
     <key>RunAtLoad</key>
     <true/>

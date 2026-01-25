@@ -1,89 +1,67 @@
 # Obsidian RAG MCP Server
 
-MCP server for Obsidian with semantic search (RAG) and vault analysis tools. Uses LanceDB for vector storage and OpenRouter for embeddings.
+MCP server para Obsidian con búsqueda semántica (RAG). Usa LanceDB y OpenRouter.
 
-## Requirements
-
-- Node.js >= 24.0.0
-- pnpm
-
-## Tools
-
-| Tool | Description |
-|------|-------------|
-| `obsidian_search` | Semantic search in your vault |
-| `obsidian_list_files` | List indexed files |
-| `obsidian_get_file` | Get full file content |
-| `obsidian_get_uri` | Get Obsidian URI for a note |
-| `obsidian_get_daily_uri` | Get Obsidian URI for daily note |
-| `obsidian_open_note` | Open note in Obsidian app (side-effect) |
-| `obsidian_open_daily` | Open daily note in Obsidian app (side-effect) |
-| `obsidian_get_backlinks` | Find notes linking to a file |
-| `obsidian_get_tags` | List all tags with frequency |
-| `obsidian_get_metadata` | Get file frontmatter only |
-
-## Install
+## Instalación
 
 ```bash
-git clone <repo-url> && cd obsidian-rag
-pnpm install
-pnpm build
+mkdir -p ~/.local/opt && cd ~/.local/opt
+git clone <repo-url> obsidian-rag
+cd obsidian-rag
+git checkout $(git describe --tags --abbrev=0)  # última tag
+pnpm install && pnpm build
 ```
 
-## Configure
+Crear symlinks para uso:
+
+```bash
+mkdir -p ~/.local/bin/obsidian-rag
+ln -sf ~/.local/opt/obsidian-rag/dist/indexer.js ~/.local/bin/obsidian-rag/indexer.js
+ln -sf ~/.local/opt/obsidian-rag/dist/server-mcp.js ~/.local/bin/obsidian-rag/server-mcp.js
+```
+
+## Configuración
 
 ```bash
 mkdir -p ~/.config/obsidian-rag
 cp config.json.example ~/.config/obsidian-rag/config.json
-```
-
-```json
-{
-  "openrouterApiKey": "sk-or-your-api-key",
-  "obsidianVaultPath": "~/Documents/Obsidian"
-}
-```
-
-## Usage
-
-```bash
-pnpm index        # Index your vault
-pnpm server-mcp   # Start MCP server
+# Editar con tu API key y path del vault
 ```
 
 ## MCP Client
 
-Add to `~/.claude.json`:
+En `~/.claude.json`:
 
 ```json
 {
   "mcpServers": {
     "obsidian-rag": {
       "command": "fnm",
-      "args": ["exec", "--using=24", "node", "{YOUR_PROJECT_PATH}/dist/server-mcp.js"]
+      "args": ["exec", "--using=24", "node", "~/.local/bin/obsidian-rag/server-mcp.js"]
     }
   }
 }
 ```
 
-Using `fnm exec --using=24` ensures the correct Node version without relying on PATH.
-
 ## Auto-indexing (macOS)
 
 ```bash
 cp local.obsidian-rag.index.plist.example ~/Library/LaunchAgents/local.obsidian-rag.index.plist
-# Edit plist with your paths
+# Editar paths en el plist
 launchctl load ~/Library/LaunchAgents/local.obsidian-rag.index.plist
 ```
 
-Re-indexes on vault changes (throttled 10 min).
+## Tools
 
-## Development
-
-```bash
-pnpm dev:server-mcp   # Run server (tsx, no build)
-pnpm dev:index        # Run indexer (tsx, no build)
-pnpm test             # Run tests
-pnpm typecheck        # Type check
-pnpm build            # Transpile to dist/
-```
+| Tool | Descripción |
+|------|-------------|
+| `obsidian_search` | Búsqueda semántica |
+| `obsidian_list_files` | Listar archivos indexados |
+| `obsidian_get_file` | Contenido completo de un archivo |
+| `obsidian_get_uri` | URI de Obsidian para una nota |
+| `obsidian_get_daily_uri` | URI para nota diaria |
+| `obsidian_open_note` | Abrir nota en Obsidian |
+| `obsidian_open_daily` | Abrir nota diaria en Obsidian |
+| `obsidian_get_backlinks` | Notas que enlazan a un archivo |
+| `obsidian_get_tags` | Tags con frecuencia |
+| `obsidian_get_metadata` | Frontmatter de un archivo |
