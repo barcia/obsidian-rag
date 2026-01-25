@@ -16,7 +16,6 @@
     "@lancedb/lancedb": "^0.13.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "apache-arrow": "^17.0.0",
-    "dotenv": "^17.2.3",
     "glob": "^11.0.0",
     "gray-matter": "^4.0.3",
     "openai": "^4.73.0"

@@ -1,34 +1,62 @@
-import { config as loadDotenv } from 'dotenv';
+import { readFileSync, existsSync } from 'fs';
 import { homedir } from 'os';
 import { resolve } from 'path';
 
-const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
-const ENV_PATH = resolve(DATA_DIR, '.env');
+export const CONFIG_PATH = resolve(homedir(), '.config/obsidian-rag/config.json');
+export const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
 
-loadDotenv({ path: ENV_PATH });
+interface ConfigFile {
+  openrouterApiKey?: string;
+  obsidianVaultPath?: string;
+  embeddingModel?: string;
+}
+
+function loadConfig(): ConfigFile {
+  if (!existsSync(CONFIG_PATH)) {
+    return {};
+  }
+  try {
+    const content = readFileSync(CONFIG_PATH, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.error(`Error parsing ${CONFIG_PATH}:`, error instanceof Error ? error.message : error);
+    return {};
+  }
+}
 
 function expandPath(path: string): string {
+  if (!path) return '';
   if (path.startsWith('~')) {
     return path.replace('~', homedir());
   }
   return resolve(path);
 }
 
+const fileConfig = loadConfig();
+
 export const config = {
-  openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
-  obsidianVaultPath: expandPath(process.env.OBSIDIAN_VAULT_PATH || ''),
+  openrouterApiKey: fileConfig.openrouterApiKey || '',
+  obsidianVaultPath: expandPath(fileConfig.obsidianVaultPath || ''),
   lancedbPath: DATA_DIR,
-  embeddingModel: process.env.EMBEDDING_MODEL || 'openai/text-embedding-3-small',
+  embeddingModel: fileConfig.embeddingModel || 'openai/text-embedding-3-small',
   embeddingDimension: 1536,
   chunkSize: 1000,
   chunkOverlap: 100,
 };
 
 export function validateConfig(): void {
+  if (!existsSync(CONFIG_PATH)) {
+    console.error(`Config file not found: ${CONFIG_PATH}`);
+    console.error(`Create it with:\n  mkdir -p ~/.config/obsidian-rag`);
+    console.error(`  cp config.json.example ~/.config/obsidian-rag/config.json`);
+    process.exit(1);
+  }
   if (!config.openrouterApiKey) {
-    throw new Error(`OPENROUTER_API_KEY is required. Set it in ${ENV_PATH}`);
+    console.error(`Missing "openrouterApiKey" in ${CONFIG_PATH}`);
+    process.exit(1);
   }
   if (!config.obsidianVaultPath) {
-    throw new Error(`OBSIDIAN_VAULT_PATH is required. Set it in ${ENV_PATH}`);
+    console.error(`Missing "obsidianVaultPath" in ${CONFIG_PATH}`);
+    process.exit(1);
   }
 }

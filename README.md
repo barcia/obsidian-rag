@@ -14,15 +14,16 @@ cp dist/obsidian-rag ~/.local/bin/
 ## Configure
 
 ```bash
-mkdir -p ~/.local/share/obsidian-rag
-cp .env.example ~/.local/share/obsidian-rag/.env
+mkdir -p ~/.config/obsidian-rag
+cp config.json.example ~/.config/obsidian-rag/config.json
 # Edit with your values
 ```
 
-The `.env` file:
-```
-OPENROUTER_API_KEY=sk-or-your-api-key
-OBSIDIAN_VAULT_PATH=/path/to/your/vault
+```json
+{
+  "openrouterApiKey": "sk-or-your-api-key",
+  "obsidianVaultPath": "~/Documents/Obsidian"
+}
 ```
 
 ## Usage

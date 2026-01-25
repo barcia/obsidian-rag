@@ -51,8 +51,6 @@ describe('CLI', () => {
     const stdout = await new Response(proc.stdout).text();
     await proc.exited;
     
-    expect(stdout).toContain('.local/share/obsidian-rag/.env');
-    expect(stdout).toContain('OPENROUTER_API_KEY');
-    expect(stdout).toContain('OBSIDIAN_VAULT_PATH');
+    expect(stdout).toContain('.config/obsidian-rag/config.json');
   });
 });
