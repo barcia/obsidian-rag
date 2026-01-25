@@ -45,6 +45,11 @@ export async function ensureTable(): Promise<lancedb.Table> {
   return table;
 }
 
+function escapeSqlString(value: string): string {
+  // Escape single quotes by doubling them (SQL standard)
+  return value.replace(/'/g, "''");
+}
+
 export async function upsertChunks(chunks: DocumentChunk[]): Promise<void> {
   if (chunks.length === 0) return;
 
@@ -52,7 +57,7 @@ export async function upsertChunks(chunks: DocumentChunk[]): Promise<void> {
 
   const filePaths = [...new Set(chunks.map(c => c.file_path))];
   for (const filePath of filePaths) {
-    await tbl.delete(`file_path = "${filePath.replace(/"/g, '\\"')}"`);
+    await tbl.delete(`file_path = '${escapeSqlString(filePath)}'`);
   }
 
   const data: Record<string, unknown>[] = chunks.map(chunk => ({ ...chunk }));
@@ -69,7 +74,7 @@ export async function search(
   let query = tbl.search(queryVector).limit(limit);
 
   if (fileFilter) {
-    query = query.where(`file_name LIKE '%${fileFilter.replace(/'/g, "''")}%'`);
+    query = query.where(`file_name LIKE '%${escapeSqlString(fileFilter)}%'`);
   }
 
   const results = await query.toArray();
@@ -86,7 +91,7 @@ export async function search(
 
 export async function deleteByFile(filePath: string): Promise<void> {
   const tbl = await ensureTable();
-  await tbl.delete(`file_path = "${filePath.replace(/"/g, '\\"')}"`);
+  await tbl.delete(`file_path = '${escapeSqlString(filePath)}'`);
 }
 
 export async function listFiles(pattern?: string, limit: number = 50): Promise<IndexedFile[]> {

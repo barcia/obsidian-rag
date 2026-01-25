@@ -6,3 +6,5 @@ dist/
 
 # Bun
 bun.lock
+
+.DS_Store
