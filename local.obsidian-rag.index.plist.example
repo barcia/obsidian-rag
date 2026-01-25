@@ -28,9 +28,9 @@
     <integer>600</integer>
 
     <key>StandardOutPath</key>
-    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.stdout.log</string>
+    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.log</string>
     <key>StandardErrorPath</key>
-    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.stderr.log</string>
+    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.error.log</string>
 
     <key>RunAtLoad</key>
     <true/>
