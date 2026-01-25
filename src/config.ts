@@ -1,41 +1,64 @@
-import { config as dotenvConfig } from 'dotenv';
+import { readFileSync, existsSync } from 'fs';
 import { homedir } from 'os';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve, basename } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(__dirname, '..');
+export const CONFIG_PATH = resolve(homedir(), '.config/obsidian-rag/config.json');
+export const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
 
-dotenvConfig({ path: resolve(projectRoot, '.env') });
+interface ConfigFile {
+  openrouterApiKey?: string;
+  obsidianVaultPath?: string;
+  vaultName?: string;
+}
 
-function expandPath(path: string, relativeToProject = false): string {
+function loadConfig(): ConfigFile {
+  if (!existsSync(CONFIG_PATH)) {
+    return {};
+  }
+  try {
+    const content = readFileSync(CONFIG_PATH, 'utf-8');
+    return JSON.parse(content);
+  } catch (error) {
+    console.error(`Error parsing ${CONFIG_PATH}:`, error instanceof Error ? error.message : error);
+    return {};
+  }
+}
+
+function expandPath(path: string): string {
+  if (!path) return '';
   if (path.startsWith('~')) {
     return path.replace('~', homedir());
-  }
-  if (path.startsWith('/')) {
-    return path;
-  }
-  // Relative paths resolve from project root, not cwd
-  if (relativeToProject) {
-    return resolve(projectRoot, path);
   }
   return resolve(path);
 }
 
+const fileConfig = loadConfig();
+const vaultPath = expandPath(fileConfig.obsidianVaultPath || '');
+
 export const config = {
-  openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
-  obsidianVaultPath: expandPath(process.env.OBSIDIAN_VAULT_PATH || '~/Documents/Obsidian'),
-  lancedbPath: expandPath(process.env.DATA_PATH || '~/.local/share/obsidian-rag'),
-  logPath: process.env.LOG_PATH ? expandPath(process.env.LOG_PATH) : undefined,
-  embeddingModel: 'openai/text-embedding-3-small',
-  embeddingDimension: 1536,
+  openrouterApiKey: fileConfig.openrouterApiKey || '',
+  obsidianVaultPath: vaultPath,
+  vaultName: fileConfig.vaultName || basename(vaultPath),
+  lancedbPath: DATA_DIR,
+  embeddingModel: 'openai/text-embedding-3-large',
+  embeddingDimension: 3072,
   chunkSize: 1000,
   chunkOverlap: 100,
 };
 
 export function validateConfig(): void {
-  if (!config.openrouterApiKey) {
-    throw new Error('OPENROUTER_API_KEY is required. Set it in .env or environment variables.');
+  if (!existsSync(CONFIG_PATH)) {
+    console.error(`Config file not found: ${CONFIG_PATH}`);
+    console.error(`Create it with:\n  mkdir -p ~/.config/obsidian-rag`);
+    console.error(`  cp config.json.example ~/.config/obsidian-rag/config.json`);
+    process.exit(1);
   }
-  
+  if (!config.openrouterApiKey) {
+    console.error(`Missing "openrouterApiKey" in ${CONFIG_PATH}`);
+    process.exit(1);
+  }
+  if (!config.obsidianVaultPath) {
+    console.error(`Missing "obsidianVaultPath" in ${CONFIG_PATH}`);
+    process.exit(1);
+  }
 }

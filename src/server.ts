@@ -7,11 +7,14 @@ import {
 import { config, validateConfig } from './config.js';
 import { initDB } from './services/lancedb.js';
 import { obsidianSearch, obsidianListFiles, obsidianGetFile } from './tools/search.js';
+import { getObsidianUri, getDailyUri, openNote, openDaily } from './tools/obsidian-uri.js';
+import { getBacklinks, getAllTags, getMetadata } from './tools/vault-analysis.js';
+import pkg from '../package.json';
 
 const server = new Server(
   {
     name: 'obsidian-rag',
-    version: '1.0.0',
+    version: pkg.version,
   },
   {
     capabilities: {
@@ -67,6 +70,92 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: 'obsidian_get_file',
         description: 'Get the full content of a specific markdown file from the vault',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            file_path: {
+              type: 'string',
+              description: 'Relative path to the file within the vault',
+            },
+          },
+          required: ['file_path'],
+        },
+      },
+      {
+        name: 'obsidian_get_uri',
+        description: 'Generate an Obsidian URI link for a note. Returns the URI without opening anything.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            file_path: {
+              type: 'string',
+              description: 'Relative path to the file within the vault',
+            },
+          },
+          required: ['file_path'],
+        },
+      },
+      {
+        name: 'obsidian_get_daily_uri',
+        description: 'Generate an Obsidian URI link for the daily note. Returns the URI without opening anything.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'obsidian_open_note',
+        description: 'Opens a note in the Obsidian app. SIDE-EFFECT: This will launch or focus Obsidian on the user\'s system. Only use when the user explicitly asks to open a note in Obsidian.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            file_path: {
+              type: 'string',
+              description: 'Relative path to the file within the vault',
+            },
+          },
+          required: ['file_path'],
+        },
+      },
+      {
+        name: 'obsidian_open_daily',
+        description: 'Opens the daily note in the Obsidian app. SIDE-EFFECT: This will launch or focus Obsidian on the user\'s system. Only use when the user explicitly asks to open the daily note.',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
+        name: 'obsidian_get_backlinks',
+        description: 'Find all notes that link to a specific note (backlinks). Useful for understanding how notes are connected.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            file_path: {
+              type: 'string',
+              description: 'Relative path to the file within the vault',
+            },
+          },
+          required: ['file_path'],
+        },
+      },
+      {
+        name: 'obsidian_get_tags',
+        description: 'List all unique tags in the vault with their frequency count. Includes both inline #tags and frontmatter tags.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            limit: {
+              type: 'number',
+              description: 'Maximum number of tags to return (default: 50, sorted by frequency)',
+              default: 50,
+            },
+          },
+        },
+      },
+      {
+        name: 'obsidian_get_metadata',
+        description: 'Get only the frontmatter/properties of a file without the full content. Includes file stats like modified date.',
         inputSchema: {
           type: 'object',
           properties: {
@@ -135,6 +224,102 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      case 'obsidian_get_uri': {
+        const filePath = args?.file_path as string;
+        const uri = getObsidianUri(filePath);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: uri,
+            },
+          ],
+        };
+      }
+
+      case 'obsidian_get_daily_uri': {
+        const uri = getDailyUri();
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: uri,
+            },
+          ],
+        };
+      }
+
+      case 'obsidian_open_note': {
+        const filePath = args?.file_path as string;
+        const uri = await openNote(filePath);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Opened in Obsidian: ${uri}`,
+            },
+          ],
+        };
+      }
+
+      case 'obsidian_open_daily': {
+        const uri = await openDaily();
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Opened daily note in Obsidian: ${uri}`,
+            },
+          ],
+        };
+      }
+
+      case 'obsidian_get_backlinks': {
+        const filePath = args?.file_path as string;
+        const backlinks = await getBacklinks(filePath);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(backlinks, null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'obsidian_get_tags': {
+        const limit = (args?.limit as number) || 50;
+        const tags = await getAllTags();
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(tags.slice(0, limit), null, 2),
+            },
+          ],
+        };
+      }
+
+      case 'obsidian_get_metadata': {
+        const filePath = args?.file_path as string;
+        const metadata = await getMetadata(filePath);
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(metadata, null, 2),
+            },
+          ],
+        };
+      }
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -167,4 +352,4 @@ async function main() {
   }
 }
 
-main();
+export { main as runServer };

@@ -1,7 +1,8 @@
 node_modules/
 dist/
-data/
 .env
 *.log
-.pnpm-store/
 *.plist
+
+# Bun
+bun.lock
