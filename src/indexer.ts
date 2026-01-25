@@ -101,24 +101,12 @@ async function indexVault(): Promise<IndexStats> {
 async function main() {
   try {
     validateConfig();
-
-    if (config.logPath) {
-      log('--- Index job started ---');
-    }
-
     const stats = await indexVault();
-
-    log(`Summary: added=${stats.added} updated=${stats.updated} deleted=${stats.deleted} unchanged=${stats.unchanged} chunks=${stats.total_chunks}`);
-
-    if (config.logPath) {
-      log('--- Index job completed ---');
-    } else {
-      console.log('\n✅ Indexing complete!');
-    }
+    log(`Done: added=${stats.added} updated=${stats.updated} deleted=${stats.deleted} unchanged=${stats.unchanged} chunks=${stats.total_chunks}`);
   } catch (error) {
     logError('Indexing failed', error);
     process.exit(1);
   }
 }
 
-main();
+export { main as runIndexer };

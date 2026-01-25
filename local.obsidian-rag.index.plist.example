@@ -7,15 +7,9 @@
 
     <key>ProgramArguments</key>
     <array>
-        <string>{YOUR_NODE_PATH}</string>
-        <string>{YOUR_INDEXER_JS_PATH}/obsidian-rag/indexer.js</string>
+        <string>{YOUR_HOME}/.local/bin/obsidian-rag</string>
+        <string>index</string>
     </array>
-
-    <key>EnvironmentVariables</key>
-    <dict>
-        <key>LOG_PATH</key>
-        <string>{YOUR_HOME}/Library/Logs/obsidian-rag/indexer.log</string>
-    </dict>
 
     <key>WatchPaths</key>
     <array>
@@ -26,9 +20,9 @@
     <integer>600</integer>
 
     <key>StandardOutPath</key>
-    <string>{YOUR_HOME}/Library/Logs/obsidian-rag/launchd-stdout.log</string>
+    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.stdout.log</string>
     <key>StandardErrorPath</key>
-    <string>{YOUR_HOME}/Library/Logs/obsidian-rag/launchd-stderr.log</string>
+    <string>{YOUR_HOME}/Library/Logs/obsidian-rag.stderr.log</string>
 
     <key>RunAtLoad</key>
     <true/>

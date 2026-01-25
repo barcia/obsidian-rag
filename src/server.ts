@@ -167,4 +167,4 @@ async function main() {
   }
 }
 
-main();
+export { main as runServer };

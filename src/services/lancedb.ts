@@ -2,7 +2,7 @@ import * as lancedb from '@lancedb/lancedb';
 import { config } from '../config.js';
 import type { DocumentChunk, SearchResult, IndexedFile, ChunkMetadata } from '../types.js';
 
-const TABLE_NAME = 'obsidian_chunks';
+export const TABLE_NAME = 'obsidian_chunks';
 
 let db: lancedb.Connection | null = null;
 let table: lancedb.Table | null = null;

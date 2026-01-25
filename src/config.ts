@@ -1,33 +1,24 @@
-import { config as dotenvConfig } from 'dotenv';
+import { config as loadDotenv } from 'dotenv';
 import { homedir } from 'os';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = resolve(__dirname, '..');
+const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
+const ENV_PATH = resolve(DATA_DIR, '.env');
 
-dotenvConfig({ path: resolve(projectRoot, '.env') });
+loadDotenv({ path: ENV_PATH });
 
-function expandPath(path: string, relativeToProject = false): string {
+function expandPath(path: string): string {
   if (path.startsWith('~')) {
     return path.replace('~', homedir());
-  }
-  if (path.startsWith('/')) {
-    return path;
-  }
-  // Relative paths resolve from project root, not cwd
-  if (relativeToProject) {
-    return resolve(projectRoot, path);
   }
   return resolve(path);
 }
 
 export const config = {
   openrouterApiKey: process.env.OPENROUTER_API_KEY || '',
-  obsidianVaultPath: expandPath(process.env.OBSIDIAN_VAULT_PATH || '~/Documents/Obsidian'),
-  lancedbPath: expandPath(process.env.DATA_PATH || '~/.local/share/obsidian-rag'),
-  logPath: process.env.LOG_PATH ? expandPath(process.env.LOG_PATH) : undefined,
-  embeddingModel: 'openai/text-embedding-3-small',
+  obsidianVaultPath: expandPath(process.env.OBSIDIAN_VAULT_PATH || ''),
+  lancedbPath: DATA_DIR,
+  embeddingModel: process.env.EMBEDDING_MODEL || 'openai/text-embedding-3-small',
   embeddingDimension: 1536,
   chunkSize: 1000,
   chunkOverlap: 100,
@@ -35,7 +26,9 @@ export const config = {
 
 export function validateConfig(): void {
   if (!config.openrouterApiKey) {
-    throw new Error('OPENROUTER_API_KEY is required. Set it in .env or environment variables.');
+    throw new Error(`OPENROUTER_API_KEY is required. Set it in ${ENV_PATH}`);
   }
-  
+  if (!config.obsidianVaultPath) {
+    throw new Error(`OBSIDIAN_VAULT_PATH is required. Set it in ${ENV_PATH}`);
+  }
 }

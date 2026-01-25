@@ -1,149 +1,77 @@
 # Obsidian RAG MCP Server
 
-Local RAG system for semantic search in your Obsidian vault using LanceDB and OpenRouter.
+Semantic search for your Obsidian vault via MCP. Uses LanceDB for vector storage and OpenRouter for embeddings.
 
-## Installation
-
-1. Clone the repository to `~/.local/mcp`:
+## Install
 
 ```bash
-mkdir -p ~/.local/mcp
-cd ~/.local/mcp
-git clone <repo-url> obsidian-rag
-cd obsidian-rag
+git clone <repo-url> && cd obsidian-rag
+bun install
+bun run build
+cp dist/obsidian-rag ~/.local/bin/
 ```
 
-2. Configure the `.env` file:
+## Configure
 
 ```bash
-cp .env.example .env
+mkdir -p ~/.local/share/obsidian-rag
+cp .env.example ~/.local/share/obsidian-rag/.env
+# Edit with your values
 ```
 
-Edit `.env` with your configuration:
-
+The `.env` file:
 ```
 OPENROUTER_API_KEY=sk-or-your-api-key
-OBSIDIAN_VAULT_PATH=~/Documents/Obsidian
-DATA_PATH=~/.local/share/obsidian-rag
-```
-
-> **Note**: Data is stored in `~/.local/share/obsidian-rag/` by default.
-
-3. Install dependencies and build:
-
-```bash
-pnpm install
-pnpm run build
-```
-
-4. Create symlinks for the executables:
-
-```bash
-mkdir -p ~/.local/bin/obsidian-rag
-ln -sf ~/.local/mcp/obsidian-rag/dist/server.js ~/.local/bin/obsidian-rag/server.js
-ln -sf ~/.local/mcp/obsidian-rag/dist/indexer.js ~/.local/bin/obsidian-rag/indexer.js
+OBSIDIAN_VAULT_PATH=/path/to/your/vault
 ```
 
 ## Usage
 
-### Index the vault
-
-**Interactive mode** (terminal with visual output):
-
 ```bash
-pnpm run index
+obsidian-rag index        # Index your vault
+obsidian-rag reindex      # Delete database and re-index
+obsidian-rag mcp-server   # Start MCP server
 ```
 
-**Automatic mode** (for cron/launchctl, writes to log):
+## MCP Client
 
-```bash
-pnpm run index:cron
-```
-
-Logs are saved to `~/.local/share/obsidian-rag/index.log`
-
-### Configure in MCP client
-
-Add to your MCP configuration (e.g., `~/.claude.json`):
+Add to `~/.claude.json`:
 
 ```json
 {
   "mcpServers": {
     "obsidian-rag": {
-      "command": "node",
-      "args": ["/Users/{USER}/.local/bin/obsidian-rag/server.js"]
+      "command": "{YOUR_HOME}/.local/bin/obsidian-rag",
+      "args": ["mcp-server"]
     }
   }
 }
 ```
 
-### Automatic indexing with launchctl (macOS)
-
-The `local.obsidian-rag.index.plist` file runs the indexer **every 4 hours**.
-
-1. Copy the plist to LaunchAgents:
+## Auto-indexing (macOS)
 
 ```bash
-cp local.obsidian-rag.index.plist ~/Library/LaunchAgents/
-```
-
-2. Load the service:
-
-```bash
+cp local.obsidian-rag.index.plist.example ~/Library/LaunchAgents/local.obsidian-rag.index.plist
+# Edit plist with your paths
 launchctl load ~/Library/LaunchAgents/local.obsidian-rag.index.plist
 ```
 
-3. Useful commands:
+Re-indexes on vault changes (throttled 10 min).
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `obsidian_search` | Semantic search |
+| `obsidian_list_files` | List indexed files |
+| `obsidian_get_file` | Get file content |
+
+## Development
 
 ```bash
-# Run manually
-launchctl start local.obsidian-rag.index
-
-# View logs
-cat ~/.local/share/obsidian-rag/index.log
-
-# Uninstall
-launchctl unload ~/Library/LaunchAgents/local.obsidian-rag.index.plist
-```
-
-## Available MCP Tools
-
-### `obsidian_search`
-
-Semantic search in the vault.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `query` | string | Natural language query |
-| `limit` | number | Number of results (default: 5) |
-| `file_filter` | string | Filter by filename (optional) |
-
-### `obsidian_list_files`
-
-List indexed files.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `pattern` | string | Filter by name (optional) |
-| `limit` | number | Maximum results (default: 50) |
-
-### `obsidian_get_file`
-
-Get the full content of a file.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `file_path` | string | Relative path to the vault |
-
-## Directory Structure
-
-```
-~/.local/
-├── mcp/obsidian-rag/            # Source code
-├── bin/obsidian-rag/            # Symlinks to executables
-│   ├── server.js
-│   └── indexer.js
-└── share/obsidian-rag/          # Data
-    ├── obsidian_chunks.lance/   # Vector database
-    └── index.log                # Indexing logs
+bun run mcp-server   # Run server
+bun run index        # Run indexer  
+bun run reindex      # Fresh re-index
+bun test             # Run tests
+bun run build        # Compile binary
 ```
