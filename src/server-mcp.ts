@@ -9,7 +9,7 @@ import { initDB } from './services/lancedb.js';
 import { obsidianSearch, obsidianListFiles, obsidianGetFile } from './tools/search.js';
 import { getObsidianUri, getDailyUri, openNote, openDaily } from './tools/obsidian-uri.js';
 import { getBacklinks, getAllTags, getMetadata } from './tools/vault-analysis.js';
-import pkg from '../package.json';
+import pkg from '../package.json' with { type: 'json' };
 
 const server = new Server(
   {
@@ -353,3 +353,5 @@ async function main() {
 }
 
 export { main as runServer };
+
+main();

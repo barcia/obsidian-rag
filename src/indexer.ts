@@ -15,15 +15,19 @@ async function indexVault(): Promise<IndexStats> {
 
   await initDB();
 
-  const mdFiles = await glob('**/*.md', {
+  const mdFilesRaw = await glob('**/*.md', {
     cwd: config.obsidianVaultPath,
     ignore: ['**/node_modules/**', '**/.obsidian/**', '**/.trash/**'],
     follow: true,
   });
+  
+  // Normalize paths to NFC to handle macOS NFD filesystem paths consistently
+  const mdFiles = mdFilesRaw.map(f => f.normalize('NFC'));
 
   log(`Found ${mdFiles.length} markdown files`);
 
   const indexedFiles = await getIndexedFilePaths();
+  log(`Already indexed: ${indexedFiles.size} files`);
 
   const stats: IndexStats = {
     added: 0,
@@ -110,3 +114,5 @@ async function main() {
 }
 
 export { main as runIndexer };
+
+main();

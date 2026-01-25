@@ -1,4 +1,5 @@
 import * as lancedb from '@lancedb/lancedb';
+import * as arrow from 'apache-arrow';
 import { config } from '../config.js';
 import type { DocumentChunk, SearchResult, IndexedFile, ChunkMetadata } from '../types.js';
 
@@ -6,6 +7,26 @@ export const TABLE_NAME = 'obsidian_chunks';
 
 let db: lancedb.Connection | null = null;
 let table: lancedb.Table | null = null;
+
+function getTableSchema(): arrow.Schema {
+  return new arrow.Schema([
+    new arrow.Field('id', new arrow.Utf8(), false),
+    new arrow.Field('file_path', new arrow.Utf8(), false),
+    new arrow.Field('file_name', new arrow.Utf8(), false),
+    new arrow.Field('chunk_index', new arrow.Int32(), false),
+    new arrow.Field('content', new arrow.Utf8(), false),
+    new arrow.Field(
+      'vector',
+      new arrow.FixedSizeList(
+        config.embeddingDimension,
+        new arrow.Field('item', new arrow.Float32(), true)
+      ),
+      false
+    ),
+    new arrow.Field('metadata', new arrow.Utf8(), false),
+    new arrow.Field('updated_at', new arrow.Float64(), false),
+  ]);
+}
 
 export async function initDB(): Promise<void> {
   db = await lancedb.connect(config.lancedbPath);
@@ -24,19 +45,7 @@ export async function ensureTable(): Promise<lancedb.Table> {
   if (!table) {
     const tableNames = await db!.tableNames();
     if (!tableNames.includes(TABLE_NAME)) {
-      const initialData: Record<string, unknown>[] = [{
-        id: '__init__',
-        file_path: '',
-        file_name: '',
-        chunk_index: 0,
-        content: '',
-        vector: new Array(config.embeddingDimension).fill(0),
-        metadata: '{}',
-        updated_at: 0,
-      }];
-
-      table = await db!.createTable(TABLE_NAME, initialData);
-      await table.delete('id = "__init__"');
+      table = await db!.createEmptyTable(TABLE_NAME, getTableSchema());
     } else {
       table = await db!.openTable(TABLE_NAME);
     }
@@ -60,7 +69,18 @@ export async function upsertChunks(chunks: DocumentChunk[]): Promise<void> {
     await tbl.delete(`file_path = '${escapeSqlString(filePath)}'`);
   }
 
-  const data: Record<string, unknown>[] = chunks.map(chunk => ({ ...chunk }));
+  // Build data with explicit column order matching the schema
+  const data = chunks.map(chunk => ({
+    id: chunk.id,
+    file_path: chunk.file_path,
+    file_name: chunk.file_name,
+    chunk_index: chunk.chunk_index,
+    content: chunk.content,
+    vector: Array.from(chunk.vector),  // Ensure it's a plain array
+    metadata: chunk.metadata,
+    updated_at: chunk.updated_at,
+  }));
+  
   await tbl.add(data);
 }
 
@@ -129,6 +149,17 @@ export async function listFiles(pattern?: string, limit: number = 50): Promise<I
     .slice(0, limit);
 }
 
+function isValidFilePath(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  if (value.length === 0) return false;
+  // File paths should only contain printable ASCII and common unicode
+  // They should not contain binary data or control characters
+  if (!/^[\p{L}\p{N}\p{P}\p{S}\p{Zs}./\-_]+$/u.test(value)) return false;
+  // Should look like a file path (contain .md)
+  if (!value.endsWith('.md') && !value.includes('/')) return false;
+  return true;
+}
+
 export async function getIndexedFilePaths(): Promise<Map<string, number>> {
   const tbl = await ensureTable();
   const allRows = await tbl.query().toArray();
@@ -136,8 +167,17 @@ export async function getIndexedFilePaths(): Promise<Map<string, number>> {
   const fileMap = new Map<string, number>();
 
   for (const row of allRows) {
-    const filePath = row.file_path as string;
+    const rawPath = row.file_path;
     const updatedAt = row.updated_at as number;
+    
+    // Skip corrupted rows where file_path is not a valid string
+    if (!isValidFilePath(rawPath)) {
+      continue;
+    }
+    
+    // Normalize to NFC to handle macOS NFD filesystem paths consistently
+    const filePath = rawPath.normalize('NFC');
+    
     const existing = fileMap.get(filePath);
     if (!existing || existing < updatedAt) {
       fileMap.set(filePath, updatedAt);

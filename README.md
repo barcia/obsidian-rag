@@ -2,6 +2,11 @@
 
 MCP server for Obsidian with semantic search (RAG) and vault analysis tools. Uses LanceDB for vector storage and OpenRouter for embeddings.
 
+## Requirements
+
+- Node.js >= 24.0.0
+- pnpm
+
 ## Tools
 
 | Tool | Description |
@@ -21,9 +26,8 @@ MCP server for Obsidian with semantic search (RAG) and vault analysis tools. Use
 
 ```bash
 git clone <repo-url> && cd obsidian-rag
-bun install
-bun run build
-cp dist/obsidian-rag-* ~/.local/bin/obsidian-rag
+pnpm install
+pnpm build
 ```
 
 ## Configure
@@ -43,9 +47,8 @@ cp config.json.example ~/.config/obsidian-rag/config.json
 ## Usage
 
 ```bash
-obsidian-rag index        # Index your vault
-obsidian-rag reindex      # Delete database and re-index
-obsidian-rag mcp-server   # Start MCP server
+pnpm index        # Index your vault
+pnpm server-mcp   # Start MCP server
 ```
 
 ## MCP Client
@@ -56,8 +59,8 @@ Add to `~/.claude.json`:
 {
   "mcpServers": {
     "obsidian-rag": {
-      "command": "{YOUR_HOME}/.local/bin/obsidian-rag",
-      "args": ["mcp-server"]
+      "command": "node",
+      "args": ["{YOUR_PROJECT_PATH}/dist/server-mcp.js"]
     }
   }
 }
@@ -76,9 +79,9 @@ Re-indexes on vault changes (throttled 10 min).
 ## Development
 
 ```bash
-bun run mcp-server   # Run server
-bun run index        # Run indexer  
-bun run reindex      # Fresh re-index
-bun test             # Run tests
-bun run build        # Compile binary
+pnpm dev:server-mcp   # Run server (tsx, no build)
+pnpm dev:index        # Run indexer (tsx, no build)
+pnpm test             # Run tests
+pnpm typecheck        # Type check
+pnpm build            # Transpile to dist/
 ```

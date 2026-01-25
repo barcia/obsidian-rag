@@ -1,5 +1,5 @@
-import { describe, test, expect } from 'bun:test';
-import { parseMarkdown } from '../src/services/markdown';
+import { describe, test, expect } from 'vitest';
+import { parseMarkdown } from '../src/services/markdown.js';
 
 describe('parseMarkdown', () => {
   test('extracts headers correctly', () => {

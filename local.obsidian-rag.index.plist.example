@@ -5,11 +5,23 @@
     <key>Label</key>
     <string>local.obsidian-rag.index</string>
 
+    <!-- Set PATH to use a specific Node version (e.g., via fnm) -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>{YOUR_NODE_BIN_PATH}:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+    <!-- Example: /Users/ivan/.local/share/fnm/node-versions/v24.8.0/installation/bin -->
+
     <key>ProgramArguments</key>
     <array>
-        <string>{YOUR_HOME}/.local/bin/obsidian-rag</string>
-        <string>index</string>
+        <string>node</string>
+        <string>{YOUR_PROJECT_PATH}/dist/indexer.js</string>
     </array>
+    <!-- Run `pnpm build` first to transpile TypeScript to dist/ -->
+
+    <key>WorkingDirectory</key>
+    <string>{YOUR_PROJECT_PATH}</string>
 
     <key>WatchPaths</key>
     <array>
