@@ -1,6 +1,6 @@
 import { readFileSync, existsSync } from 'fs';
 import { homedir } from 'os';
-import { resolve } from 'path';
+import { resolve, basename } from 'path';
 
 export const CONFIG_PATH = resolve(homedir(), '.config/obsidian-rag/config.json');
 export const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
@@ -8,6 +8,7 @@ export const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
 interface ConfigFile {
   openrouterApiKey?: string;
   obsidianVaultPath?: string;
+  vaultName?: string;
 }
 
 function loadConfig(): ConfigFile {
@@ -32,10 +33,12 @@ function expandPath(path: string): string {
 }
 
 const fileConfig = loadConfig();
+const vaultPath = expandPath(fileConfig.obsidianVaultPath || '');
 
 export const config = {
   openrouterApiKey: fileConfig.openrouterApiKey || '',
-  obsidianVaultPath: expandPath(fileConfig.obsidianVaultPath || ''),
+  obsidianVaultPath: vaultPath,
+  vaultName: fileConfig.vaultName || basename(vaultPath),
   lancedbPath: DATA_DIR,
   embeddingModel: 'openai/text-embedding-3-large',
   embeddingDimension: 3072,

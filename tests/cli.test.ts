@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { spawn } from 'bun';
+import pkg from '../package.json';
 
 const bunPath = process.execPath;
 
@@ -9,10 +10,10 @@ describe('CLI', () => {
       stdout: 'pipe',
       stderr: 'pipe',
     });
-    
+
     const stdout = await new Response(proc.stdout).text();
     await proc.exited;
-    
+
     expect(stdout).toContain('Usage:');
     expect(stdout).toContain('obsidian-rag mcp-server');
     expect(stdout).toContain('obsidian-rag index');
@@ -25,11 +26,11 @@ describe('CLI', () => {
       stdout: 'pipe',
       stderr: 'pipe',
     });
-    
+
     const stdout = await new Response(proc.stdout).text();
     await proc.exited;
-    
-    expect(stdout).toContain('v1.0.0');
+
+    expect(stdout).toContain(`v${pkg.version}`);
   });
 
   test('exits with error on unknown command', async () => {
@@ -37,7 +38,7 @@ describe('CLI', () => {
       stdout: 'pipe',
       stderr: 'pipe',
     });
-    
+
     await proc.exited;
     expect(proc.exitCode).toBe(1);
   });
@@ -47,10 +48,10 @@ describe('CLI', () => {
       stdout: 'pipe',
       stderr: 'pipe',
     });
-    
+
     const stdout = await new Response(proc.stdout).text();
     await proc.exited;
-    
+
     expect(stdout).toContain('.config/obsidian-rag/config.json');
   });
 });
