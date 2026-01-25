@@ -8,7 +8,7 @@ Semantic search for your Obsidian vault via MCP. Uses LanceDB for vector storage
 git clone <repo-url> && cd obsidian-rag
 bun install
 bun run build
-cp dist/obsidian-rag ~/.local/bin/
+cp dist/obsidian-rag-* ~/.local/bin/obsidian-rag
 ```
 
 ## Configure

@@ -2,8 +2,13 @@
 
 import { rmSync } from 'fs';
 import { resolve } from 'path';
+import { homedir } from 'os';
+import pkg from '../package.json';
 
 const command = process.argv[2];
+const VERSION = pkg.version;
+const DATA_DIR = resolve(homedir(), '.local/share/obsidian-rag');
+const TABLE_NAME = 'obsidian_chunks';
 
 async function main() {
   try {
@@ -21,8 +26,6 @@ async function main() {
       }
 
       case 'reindex': {
-        const { TABLE_NAME } = await import('./services/lancedb.js');
-        const { DATA_DIR } = await import('./config.js');
         console.log('Removing existing database...');
         rmSync(resolve(DATA_DIR, `${TABLE_NAME}.lance`), { recursive: true, force: true });
         console.log('Starting fresh index...\n');
@@ -32,7 +35,7 @@ async function main() {
       }
 
       default:
-        console.log(`obsidian-rag v1.0.0
+        console.log(`obsidian-rag v${VERSION}
 
 Usage:
   obsidian-rag mcp-server   Start MCP server (stdio)

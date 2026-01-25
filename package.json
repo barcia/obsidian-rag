@@ -10,7 +10,7 @@
     "reindex": "bun run src/cli.ts reindex",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "build": "bun build src/cli.ts --compile --minify --outfile dist/obsidian-rag"
+    "build": "bun build src/cli.ts --compile --minify --outfile dist/obsidian-rag-$(node -p \"require('./package.json').version\")-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m)"
   },
   "dependencies": {
     "@lancedb/lancedb": "^0.13.0",
