@@ -45,7 +45,9 @@ The following tools are exposed to the MCP client:
 ### Setup
 
 1. **Clone the repository**:
+   (Recommended for macOS/Linux: `~/.local/opt`)
    ```bash
+   mkdir -p ~/.local/opt && cd ~/.local/opt
    git clone https://github.com/yourusername/obsidian-rag.git
    cd obsidian-rag
    ```
@@ -75,6 +77,11 @@ The following tools are exposed to the MCP client:
 Run the indexer once to create the initial vector database:
 ```bash
 pnpm run index
+```
+
+To force a complete re-index (drops the existing database and indexes from scratch):
+```bash
+pnpm run reindex
 ```
 
 ## 🔌 Integration
@@ -120,6 +127,7 @@ You can keep your index up to date automatically using the provided `plist` temp
 
 - `pnpm run build`: Compile the TypeScript code.
 - `pnpm run typecheck`: Run type checking.
+- `pnpm run reindex`: Drop the database and re-index the vault from scratch.
 - `pnpm test`: Run tests using Vitest.
 
 ## License

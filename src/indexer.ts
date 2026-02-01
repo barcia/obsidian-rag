@@ -115,4 +115,7 @@ async function main() {
 
 export { main as runIndexer };
 
-main();
+// Only run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}

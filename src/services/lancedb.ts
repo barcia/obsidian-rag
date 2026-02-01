@@ -191,3 +191,14 @@ export async function closeDB(): Promise<void> {
   table = null;
   db = null;
 }
+
+export async function dropDatabase(): Promise<void> {
+  if (!db) {
+    db = await lancedb.connect(config.lancedbPath);
+  }
+  const tableNames = await db.tableNames();
+  if (tableNames.includes(TABLE_NAME)) {
+    await db.dropTable(TABLE_NAME);
+  }
+  table = null;
+}

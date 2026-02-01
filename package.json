@@ -13,6 +13,8 @@
     "index": "node dist/indexer.js",
     "dev:server-mcp": "npx tsx src/server-mcp.ts",
     "dev:index": "npx tsx src/indexer.ts",
+    "reindex": "node dist/reindexer.js",
+    "dev:reindex": "npx tsx src/reindexer.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
