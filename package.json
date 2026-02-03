@@ -1,6 +1,6 @@
 {
   "name": "obsidian-rag",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "MCP server for semantic search in Obsidian vault using LanceDB",
   "type": "module",
   "engines": {

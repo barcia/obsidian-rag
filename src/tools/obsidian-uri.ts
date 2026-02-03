@@ -23,7 +23,7 @@ function buildObsidianUri(
 function getVaultParam(): Record<string, string> {
   if (!config.vaultName) {
     throw new Error(
-      'Could not determine vault name. Ensure "obsidianVaultPath" is configured in config.json.'
+      'Could not determine vault name. Ensure OBSIDIAN_VAULT_PATH environment variable is set.'
     );
   }
   return { vault: config.vaultName };

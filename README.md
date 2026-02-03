@@ -62,15 +62,10 @@ The following tools are exposed to the MCP client:
    pnpm run build
    ```
 
-4. **Configure the server**:
-   Create the configuration directory and copy the example config:
-   ```bash
-   mkdir -p ~/.config/obsidian-rag
-   cp templates/config.json.example ~/.config/obsidian-rag/config.json
-   ```
-   Edit `~/.config/obsidian-rag/config.json` with your details:
-   - `openrouterApiKey`: Your API key.
-   - `obsidianVaultPath`: Absolute path to your Obsidian vault.
+4. **Set environment variables**:
+   The server requires two environment variables:
+   - `OPENROUTER_API_KEY`: Your API key from [OpenRouter](https://openrouter.ai/).
+   - `OBSIDIAN_VAULT_PATH`: Absolute path to your Obsidian vault (e.g., `/Users/you/Documents/Obsidian`).
 
 ### 🔍 Initial Indexing
 
@@ -95,7 +90,11 @@ Add the following to your `claude_desktop_config.json`:
   "mcpServers": {
     "obsidian-rag": {
       "command": "node",
-      "args": ["/absolute/path/to/obsidian-rag/dist/server-mcp.js"]
+      "args": ["/absolute/path/to/obsidian-rag/dist/server-mcp.js"],
+      "env": {
+        "OPENROUTER_API_KEY": "sk-or-your-api-key",
+        "OBSIDIAN_VAULT_PATH": "/absolute/path/to/vault"
+      }
     }
   }
 }
@@ -108,6 +107,7 @@ Add the following to your `claude_desktop_config.json`:
 3. Name: `obsidian-rag`
 4. Type: `command`
 5. Command: `node /absolute/path/to/obsidian-rag/dist/server-mcp.js`
+6. Add environment variables: `OPENROUTER_API_KEY` and `OBSIDIAN_VAULT_PATH`.
 
 ## 🕒 Auto-indexing (macOS)
 
@@ -117,7 +117,10 @@ You can keep your index up to date automatically using the provided `plist` temp
    ```bash
    cp templates/local.obsidian-rag.index.plist.example ~/Library/LaunchAgents/local.obsidian-rag.index.plist
    ```
-2. Edit the file to replace `{HOME}` and `{OBSIDIAN_VAULT_PATH}` with your actual absolute paths.
+2. Edit the file:
+   - Replace `{HOME}` with your home directory path (e.g., `/Users/yourname`).
+   - Replace `{OBSIDIAN_VAULT_PATH}` with your vault path.
+   - Replace `{YOUR_API_KEY}` with your OpenRouter API key.
 3. Load the agent:
    ```bash
    launchctl load ~/Library/LaunchAgents/local.obsidian-rag.index.plist
