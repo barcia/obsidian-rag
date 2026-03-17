@@ -2,7 +2,7 @@ import { generateEmbedding } from '../services/embeddings.js';
 import { search, listFiles } from '../services/lancedb.js';
 import { readMarkdownFile } from '../services/markdown.js';
 import { config } from '../config.js';
-import { join } from 'path';
+import { resolve } from 'path';
 import type { SearchResult, IndexedFile } from '../types.js';
 
 export async function obsidianSearch(
@@ -22,6 +22,9 @@ export async function obsidianListFiles(
 }
 
 export async function obsidianGetFile(filePath: string): Promise<string> {
-  const fullPath = join(config.obsidianVaultPath, filePath);
+  const fullPath = resolve(config.obsidianVaultPath, filePath);
+  if (!fullPath.startsWith(config.obsidianVaultPath)) {
+    throw new Error('Path traversal detected: path escapes the vault directory');
+  }
   return readMarkdownFile(fullPath);
 }
