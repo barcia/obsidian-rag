@@ -1,35 +1,21 @@
 # Obsidian RAG MCP Server 🗄️🧠
 
-A powerful Model Context Protocol (MCP) server that provides Retrieval-Augmented Generation (RAG) capabilities for your Obsidian vault. It allows AI models (like Claude or Cursor) to semantically search, analyze, and interact with your personal knowledge base.
+A Model Context Protocol (MCP) server that provides semantic search capabilities for your Obsidian vault. It allows AI models (like Claude or Cursor) to search and retrieve content from your personal knowledge base using natural language.
 
 ## Features
 
 - **Semantic Vector Search**: Find notes by meaning, not just keywords, using OpenAI embeddings and LanceDB.
 - **Local Knowledge Base**: High-performance local vector storage using [LanceDB](https://lancedb.com/).
 - **Incremental Indexing**: Intelligent indexing that only processes new or modified files using hash-based tracking.
-- **Deep Vault Analysis**: Tools to explore backlinks, tags, and metadata for better context understanding.
-- **Obsidian Integration**: Open notes or daily notes directly in the Obsidian app from your AI chat.
 - **Privacy First**: Your data stays local; only text fragments are sent to the embedding provider.
 
 ## 🛠 Tools Provided
 
 The following tools are exposed to the MCP client:
 
-### Search & Retrieval
 - `obsidian_search`: Performs a semantic search across the vault. Returns relevant document chunks based on a natural language query.
 - `obsidian_list_files`: Lists all indexed files, with optional pattern filtering.
 - `obsidian_get_file`: Retrieves the full markdown content of a specific note.
-
-### Interaction
-- `obsidian_get_uri`: Generates an `obsidian://` URI link for a note.
-- `obsidian_get_daily_uri`: Generates an `obsidian://` URI link for today's daily note.
-- `obsidian_open_note`: Opens a specific note directly in the Obsidian app.
-- `obsidian_open_daily`: Opens the daily note directly in the Obsidian app.
-
-### Analysis
-- `obsidian_get_backlinks`: Lists all notes that link to a specific note.
-- `obsidian_get_tags`: Lists all unique tags in the vault with their frequency count.
-- `obsidian_get_metadata`: Retrieves frontmatter/properties and file statistics without the full content.
 
 ## 🚀 Installation
 
