@@ -89,6 +89,9 @@ function splitByHeaders(content: string): Section[] {
 }
 
 function chunkText(text: string, maxSize: number, overlap: number): string[] {
+  if (overlap >= maxSize) {
+    overlap = Math.floor(maxSize / 2);
+  }
   const words = text.split(/\s+/);
 
   if (words.length <= maxSize) {
