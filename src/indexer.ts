@@ -65,6 +65,10 @@ async function indexVault(): Promise<IndexStats> {
       const contents = chunks.map(c => c.content);
       const embeddings = await generateEmbeddings(contents);
 
+      if (embeddings.length !== chunks.length) {
+        throw new Error(`Embeddings count (${embeddings.length}) does not match chunks count (${chunks.length}) for ${file}`);
+      }
+
       const documentChunks: DocumentChunk[] = chunks.map((chunk, index) => ({
         id: createHash('sha256').update(`${file}:${index}:${chunk.content}`).digest('hex'),
         file_path: file,
