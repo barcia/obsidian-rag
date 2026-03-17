@@ -5,11 +5,13 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { config, validateConfig } from './config.js';
-import { initDB } from './services/lancedb.js';
+import { initDB, closeDB } from './services/lancedb.js';
 import { obsidianSearch, obsidianListFiles, obsidianGetFile } from './tools/search.js';
-import { getObsidianUri, getDailyUri, openNote, openDaily } from './tools/obsidian-uri.js';
-import { getBacklinks, getAllTags, getMetadata } from './tools/vault-analysis.js';
+import { log, logError } from './services/logger.js';
 import pkg from '../package.json' with { type: 'json' };
+
+const MAX_SEARCH_LIMIT = 100;
+const MAX_LIST_LIMIT = 500;
 
 const server = new Server(
   {
@@ -81,92 +83,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['file_path'],
         },
       },
-      {
-        name: 'obsidian_get_uri',
-        description: 'Generate an Obsidian URI link for a note. Returns the URI without opening anything.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            file_path: {
-              type: 'string',
-              description: 'Relative path to the file within the vault',
-            },
-          },
-          required: ['file_path'],
-        },
-      },
-      {
-        name: 'obsidian_get_daily_uri',
-        description: 'Generate an Obsidian URI link for the daily note. Returns the URI without opening anything.',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-        },
-      },
-      {
-        name: 'obsidian_open_note',
-        description: 'Opens a note in the Obsidian app. SIDE-EFFECT: This will launch or focus Obsidian on the user\'s system. Only use when the user explicitly asks to open a note in Obsidian.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            file_path: {
-              type: 'string',
-              description: 'Relative path to the file within the vault',
-            },
-          },
-          required: ['file_path'],
-        },
-      },
-      {
-        name: 'obsidian_open_daily',
-        description: 'Opens the daily note in the Obsidian app. SIDE-EFFECT: This will launch or focus Obsidian on the user\'s system. Only use when the user explicitly asks to open the daily note.',
-        inputSchema: {
-          type: 'object',
-          properties: {},
-        },
-      },
-      {
-        name: 'obsidian_get_backlinks',
-        description: 'Find all notes that link to a specific note (backlinks). Useful for understanding how notes are connected.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            file_path: {
-              type: 'string',
-              description: 'Relative path to the file within the vault',
-            },
-          },
-          required: ['file_path'],
-        },
-      },
-      {
-        name: 'obsidian_get_tags',
-        description: 'List all unique tags in the vault with their frequency count. Includes both inline #tags and frontmatter tags.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            limit: {
-              type: 'number',
-              description: 'Maximum number of tags to return (default: 50, sorted by frequency)',
-              default: 50,
-            },
-          },
-        },
-      },
-      {
-        name: 'obsidian_get_metadata',
-        description: 'Get only the frontmatter/properties of a file without the full content. Includes file stats like modified date.',
-        inputSchema: {
-          type: 'object',
-          properties: {
-            file_path: {
-              type: 'string',
-              description: 'Relative path to the file within the vault',
-            },
-          },
-          required: ['file_path'],
-        },
-      },
     ],
   };
 });
@@ -177,8 +93,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     switch (name) {
       case 'obsidian_search': {
-        const query = args?.query as string;
-        const limit = (args?.limit as number) || 5;
+        if (typeof args?.query !== 'string' || !args.query.trim()) {
+          throw new Error('query must be a non-empty string');
+        }
+        const query = args.query;
+        const limit = Math.min((args?.limit as number) || 5, MAX_SEARCH_LIMIT);
         const fileFilter = args?.file_filter as string | undefined;
 
         const results = await obsidianSearch(query, limit, fileFilter);
@@ -195,7 +114,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'obsidian_list_files': {
         const pattern = args?.pattern as string | undefined;
-        const limit = (args?.limit as number) || 50;
+        const limit = Math.min((args?.limit as number) || 50, MAX_LIST_LIMIT);
 
         const files = await obsidianListFiles(pattern, limit);
 
@@ -210,7 +129,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'obsidian_get_file': {
-        const filePath = args?.file_path as string;
+        if (typeof args?.file_path !== 'string' || !args.file_path.trim()) {
+          throw new Error('file_path must be a non-empty string');
+        }
+        const filePath = args.file_path;
 
         const content = await obsidianGetFile(filePath);
 
@@ -219,102 +141,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: 'text',
               text: content,
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_get_uri': {
-        const filePath = args?.file_path as string;
-        const uri = getObsidianUri(filePath);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: uri,
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_get_daily_uri': {
-        const uri = getDailyUri();
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: uri,
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_open_note': {
-        const filePath = args?.file_path as string;
-        const uri = await openNote(filePath);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Opened in Obsidian: ${uri}`,
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_open_daily': {
-        const uri = await openDaily();
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Opened daily note in Obsidian: ${uri}`,
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_get_backlinks': {
-        const filePath = args?.file_path as string;
-        const backlinks = await getBacklinks(filePath);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(backlinks, null, 2),
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_get_tags': {
-        const limit = (args?.limit as number) || 50;
-        const tags = await getAllTags();
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(tags.slice(0, limit), null, 2),
-            },
-          ],
-        };
-      }
-
-      case 'obsidian_get_metadata': {
-        const filePath = args?.file_path as string;
-        const metadata = await getMetadata(filePath);
-
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(metadata, null, 2),
             },
           ],
         };
@@ -337,6 +163,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
+async function cleanup() {
+  log('Shutting down...');
+  await closeDB();
+  process.exit(0);
+}
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);
+
 async function main() {
   try {
     validateConfig();
@@ -345,9 +180,9 @@ async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
 
-    console.error('Obsidian RAG MCP server started');
+    log('Obsidian RAG MCP server started');
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logError('Failed to start server', error);
     process.exit(1);
   }
 }
