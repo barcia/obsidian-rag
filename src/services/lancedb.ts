@@ -59,6 +59,11 @@ function escapeSqlString(value: string): string {
   return value.replace(/'/g, "''");
 }
 
+/**
+ * Upserts chunks into the database. Deletes existing chunks for the same file_path before inserting.
+ * WARNING: Not transactional — LanceDB does not support transactions. The indexer must be single-writer
+ * to avoid race conditions between delete and add operations.
+ */
 export async function upsertChunks(chunks: DocumentChunk[]): Promise<void> {
   if (chunks.length === 0) return;
 
@@ -99,14 +104,22 @@ export async function search(
 
   const results = await query.toArray();
 
-  return results.map((row: Record<string, unknown>) => ({
-    file_path: row.file_path as string,
-    file_name: row.file_name as string,
-    content: row.content as string,
-    metadata: JSON.parse(row.metadata as string) as ChunkMetadata,
-    score: row._distance != null ? 1 - (row._distance as number) : 0,
-    chunk_index: row.chunk_index as number,
-  }));
+  return results.map((row: Record<string, unknown>) => {
+    let metadata: ChunkMetadata;
+    try {
+      metadata = JSON.parse(row.metadata as string) as ChunkMetadata;
+    } catch {
+      metadata = { headers: [], tags: [], frontmatter: {} };
+    }
+    return {
+      file_path: row.file_path as string,
+      file_name: row.file_name as string,
+      content: row.content as string,
+      metadata,
+      score: row._distance != null ? 1 - (row._distance as number) : 0,
+      chunk_index: row.chunk_index as number,
+    };
+  });
 }
 
 export async function deleteByFile(filePath: string): Promise<void> {
@@ -117,7 +130,7 @@ export async function deleteByFile(filePath: string): Promise<void> {
 export async function listFiles(pattern?: string, limit: number = 50): Promise<IndexedFile[]> {
   const tbl = await ensureTable();
 
-  const allRows = await tbl.query().toArray();
+  const allRows = await tbl.query().select(['file_path', 'file_name', 'updated_at']).toArray();
 
   const fileMap = new Map<string, IndexedFile>();
 
@@ -162,7 +175,7 @@ function isValidFilePath(value: unknown): value is string {
 
 export async function getIndexedFilePaths(): Promise<Map<string, number>> {
   const tbl = await ensureTable();
-  const allRows = await tbl.query().toArray();
+  const allRows = await tbl.query().select(['file_path', 'updated_at']).toArray();
 
   const fileMap = new Map<string, number>();
 
