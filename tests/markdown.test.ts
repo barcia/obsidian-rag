@@ -52,4 +52,11 @@ Some body text`;
     const chunks = parseMarkdown(content);
     expect(chunks.length).toBe(0);
   });
+
+  test('handles large content without infinite loop', { timeout: 5000 }, () => {
+    const words = Array.from({ length: 5000 }, (_, i) => `word${i}`);
+    const content = `# Large Section\n${words.join(' ')}`;
+    const chunks = parseMarkdown(content);
+    expect(chunks.length).toBeGreaterThan(0);
+  });
 });
